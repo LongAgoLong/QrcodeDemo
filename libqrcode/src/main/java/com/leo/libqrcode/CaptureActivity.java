@@ -46,6 +46,7 @@ public abstract class CaptureActivity extends Activity implements Callback {
     protected RelativeLayout mCropLayout = null;
     protected boolean isNeedCapture = false;
     private ImageView lightImg;
+    private ImageView mQrLineView;
 
     public boolean isNeedCapture() {
         return isNeedCapture;
@@ -96,12 +97,28 @@ public abstract class CaptureActivity extends Activity implements Callback {
         //设置全屏
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(R.layout.activity_qr_scan);
+        setUI();
+        initUI();
+
         // 初始化 CameraManager
         CameraManager.init(getApplication());
         hasSurface = false;
         inactivityTimer = new InactivityTimer(this);
 
+        TranslateAnimation mAnimation = new TranslateAnimation(TranslateAnimation.ABSOLUTE, 0f, TranslateAnimation.ABSOLUTE, 0f,
+                TranslateAnimation.RELATIVE_TO_PARENT, 0f, TranslateAnimation.RELATIVE_TO_PARENT, 0.9f);
+        mAnimation.setDuration(1500);
+        mAnimation.setRepeatCount(-1);
+        mAnimation.setRepeatMode(Animation.REVERSE);
+        mAnimation.setInterpolator(new LinearInterpolator());
+        mQrLineView.setAnimation(mAnimation);
+    }
+
+    protected void setUI() {
+        setContentView(R.layout.activity_qr_scan);
+    }
+
+    protected void initUI() {
         mContainer = (RelativeLayout) findViewById(R.id.capture_containter);
         mCropLayout = (RelativeLayout) findViewById(R.id.capture_crop_layout);
 
@@ -112,15 +129,7 @@ public abstract class CaptureActivity extends Activity implements Callback {
                 light();
             }
         });
-
-        ImageView mQrLineView = (ImageView) findViewById(R.id.capture_scan_line);
-        TranslateAnimation mAnimation = new TranslateAnimation(TranslateAnimation.ABSOLUTE, 0f, TranslateAnimation.ABSOLUTE, 0f,
-                TranslateAnimation.RELATIVE_TO_PARENT, 0f, TranslateAnimation.RELATIVE_TO_PARENT, 0.9f);
-        mAnimation.setDuration(1500);
-        mAnimation.setRepeatCount(-1);
-        mAnimation.setRepeatMode(Animation.REVERSE);
-        mAnimation.setInterpolator(new LinearInterpolator());
-        mQrLineView.setAnimation(mAnimation);
+        mQrLineView = (ImageView) findViewById(R.id.capture_scan_line);
     }
 
     boolean flag = true;
