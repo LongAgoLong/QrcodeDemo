@@ -2,10 +2,11 @@
 [![](https://jitpack.io/v/LongAgoLong/QrcodeDemo.svg)](https://jitpack.io/#LongAgoLong/QrcodeDemo)
 ------
 ## 1、优势
-> * 具有zbar的识别速度
-> * 具有zxing的相机管理、二维码生成
-> * 支持相册二维码图片的高效识别
-> * 支持自定义布局（产品想怎么玩都行）
+> * 具有zbar的识别速度；
+> * 具有zxing的相机管理、二维码生成；
+> * 支持不退出界面连续扫描；
+> * 支持高效识别相册二维码图片（Zbar识别）；
+> * 支持自定义布局（产品想怎么玩都行）。
 ------
 ## 2、使用方式
 ### ①添加依赖
@@ -57,7 +58,7 @@ public class QrcodeScanActivity extends CaptureActivity {
     @Override
     public void scanResult(String result) { 
         // 处理结果
-        // 如果要继续扫描调用restartScan()方法
+        // 如果要继续扫描，处理完结果后调用restartScan()重启扫描识别
     }
 }
 ```
