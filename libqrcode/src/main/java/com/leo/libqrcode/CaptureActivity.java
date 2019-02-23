@@ -12,6 +12,7 @@ import android.os.Vibrator;
 import android.view.SurfaceHolder;
 import android.view.SurfaceHolder.Callback;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
@@ -44,6 +45,7 @@ public abstract class CaptureActivity extends Activity implements Callback {
     protected RelativeLayout mContainer = null;
     protected RelativeLayout mCropLayout = null;
     protected boolean isNeedCapture = false;
+    private ImageView lightImg;
 
     public boolean isNeedCapture() {
         return isNeedCapture;
@@ -103,6 +105,14 @@ public abstract class CaptureActivity extends Activity implements Callback {
         mContainer = (RelativeLayout) findViewById(R.id.capture_containter);
         mCropLayout = (RelativeLayout) findViewById(R.id.capture_crop_layout);
 
+        lightImg = (ImageView) findViewById(R.id.light_img);
+        lightImg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                light();
+            }
+        });
+
         ImageView mQrLineView = (ImageView) findViewById(R.id.capture_scan_line);
         TranslateAnimation mAnimation = new TranslateAnimation(TranslateAnimation.ABSOLUTE, 0f, TranslateAnimation.ABSOLUTE, 0f,
                 TranslateAnimation.RELATIVE_TO_PARENT, 0f, TranslateAnimation.RELATIVE_TO_PARENT, 0.9f);
@@ -120,10 +130,12 @@ public abstract class CaptureActivity extends Activity implements Callback {
             flag = false;
             // 开闪光灯
             CameraManager.get().openLight();
+            lightImg.setSelected(true);
         } else {
             flag = true;
             // 关闪光灯
             CameraManager.get().offLight();
+            lightImg.setSelected(false);
         }
 
     }
