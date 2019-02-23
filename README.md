@@ -37,7 +37,21 @@ implementation 'com.github.LongAgoLong:QrcodeDemo:1.2'
 	<version>1.2</version>
 </dependency>
 ```
-### ②继承类，处理结果
+### ②添加权限（Android6.0以上版本需自行动态请求）
+```java
+<uses-permission android:name="android.permission.CAMERA" />
+<uses-permission android:name="android.permission.FLASHLIGHT" />
+<uses-permission android:name="android.permission.VIBRATE" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+<uses-feature
+    android:name="android.hardware.camera"
+    android:required="false" />
+<uses-feature
+    android:name="android.hardware.camera.autofocus"
+    android:required="false" />
+```
+### ③继承类，处理结果
 ```java
 public class QrcodeScanActivity extends CaptureActivity {
     @Override
@@ -47,7 +61,7 @@ public class QrcodeScanActivity extends CaptureActivity {
     }
 }
 ```
-### ③自定义布局
+### ④自定义布局(可选，有需要再使用)
 ```java
 @Override
     protected void setUI() {
