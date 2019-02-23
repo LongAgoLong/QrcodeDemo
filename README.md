@@ -8,7 +8,7 @@
 ## 2、使用方式
 ### ①添加依赖
 ```java
-依赖方式
+implementation 'com.github.LongAgoLong:QrcodeDemo:1.0'
 ```
 ### ②继承类，处理结果
 ```java
