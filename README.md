@@ -1,4 +1,5 @@
 # 结合zxing与zbar的二维码扫描识别工具，可自定义布局
+[![](https://jitpack.io/v/LongAgoLong/QrcodeDemo.svg)](https://jitpack.io/#LongAgoLong/QrcodeDemo)
 ------
 ## 1、优势
 > * 具有zbar的识别速度
@@ -8,8 +9,33 @@
 ------
 ## 2、使用方式
 ### ①添加依赖
+**gradle依赖**
+```java
+allprojects {
+	repositories {
+		...
+		maven { url 'https://jitpack.io' }
+	}
+}
+```
 ```java
 implementation 'com.github.LongAgoLong:QrcodeDemo:1.2'
+```
+**maven依赖**
+```java
+<repositories>
+	<repository>
+		<id>jitpack.io</id>
+		<url>https://jitpack.io</url>
+	</repository>
+</repositories>
+```
+```java
+<dependency>
+	<groupId>com.github.LongAgoLong</groupId>
+	<artifactId>QrcodeDemo</artifactId>
+	<version>1.2</version>
+</dependency>
 ```
 ### ②继承类，处理结果
 ```java
