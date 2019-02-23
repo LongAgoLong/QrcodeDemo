@@ -11,27 +11,67 @@
         android:id="@+id/btn0"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="打开识别"
+        android:text="打开预览识别"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/btn1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="选择图片"
-        app:layout_constraintLeft_toLeftOf="@+id/btn0"
-        app:layout_constraintTop_toBottomOf="@+id/btn0" />
+        android:text="选择图片识别"
+        app:layout_constraintLeft_toRightOf="@+id/btn0"
+        app:layout_constraintTop_toTopOf="@+id/btn0" />
 
-    <TextView
-        android:id="@+id/resultTv"
+    <Button
+        android:id="@+id/qrcodeBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="普通二维码"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btn0"/>
+    <Button
+        android:id="@+id/logoQrcodeBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="带logo二维码"
+        app:layout_constraintLeft_toRightOf="@+id/qrcodeBtn"
+        app:layout_constraintTop_toBottomOf="@+id/btn0" />
+
+    <Button
+        android:id="@+id/bgQrcodeBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="带背景二维码"
+        app:layout_constraintLeft_toRightOf="@+id/logoQrcodeBtn"
+        app:layout_constraintTop_toTopOf="@+id/logoQrcodeBtn" />
+
+    <Button
+        android:id="@+id/maskQrcodeBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="mask二维码"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/logoQrcodeBtn" />
+
+    <ImageView
+        android:id="@+id/resultImg"
+        android:layout_width="180dp"
+        android:layout_height="180dp"
+        android:layout_marginTop="20dp"
+        android:contentDescription="@string/app_name"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/maskQrcodeBtn"/>
+    <TextView
+        android:id="@+id/resultTv"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="20dp"
         android:text="Hello World!"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/resultImg" />
 
 </android.support.constraint.ConstraintLayout>
