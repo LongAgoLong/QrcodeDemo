@@ -1,4 +1,4 @@
-# 结合zxing与zbar的二维码扫描识别工具，可自定义布局
+# 结合zxing与zbar的二维码扫描识别工具，可自定义扫码界面布局
 [![](https://jitpack.io/v/LongAgoLong/QrcodeDemo.svg)](https://jitpack.io/#LongAgoLong/QrcodeDemo)
 ------
 ## 1、优势
