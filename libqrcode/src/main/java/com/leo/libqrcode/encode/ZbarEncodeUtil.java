@@ -1,8 +1,6 @@
 package com.leo.libqrcode.encode;
 
-import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -10,9 +8,9 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
-import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.util.TypedValue;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
@@ -186,6 +184,9 @@ public class ZbarEncodeUtil {
         private Bitmap bg;
         private Bitmap logo;
         private Bitmap mask;
+        @LogoType
+        private int logoType;
+        private float roundPx = 100;
         private int frontColor = 0xff000000;
         private int bgColor = 0xffffffff;
         private int size;
@@ -200,11 +201,6 @@ public class ZbarEncodeUtil {
                 size = 100;
             }
             return new Builder(qrcode, size);
-        }
-
-        public Builder setQrcode(String s) {
-            this.qrcode = s;
-            return this;
         }
 
         public Builder setBg(Bitmap bg) {
@@ -223,8 +219,14 @@ public class ZbarEncodeUtil {
             return this;
         }
 
-        public Builder setLogo(Bitmap logo) {
+        public Builder setLogo(Bitmap logo, @LogoType int logoType) {
             this.logo = logo;
+            this.logoType = logoType;
+            return this;
+        }
+
+        public Builder setRound(float roundPx) {
+            this.roundPx = roundPx;
             return this;
         }
 
@@ -250,7 +252,18 @@ public class ZbarEncodeUtil {
                 zbarEncodeUtil.setFrontColor(frontColor);
                 Bitmap qrCodeBmp = zbarEncodeUtil.createQRCode(qrcode, size, ErrorCorrectionLevel.H);
                 if (null != logo) {
-                    qrCodeBmp = zbarEncodeUtil.addLogo(qrCodeBmp, logo);
+                    if (logoType == LogoType.NORMAL) {
+                        qrCodeBmp = zbarEncodeUtil.addLogo(qrCodeBmp, logo);
+                    } else if (logoType == LogoType.ROUND) {
+                        Bitmap bmp = BmpUtil.getRoundedCornerBitmap(logo, roundPx);
+                        if (null != bmp) {
+                            logo = bmp;
+                        }
+                        qrCodeBmp = zbarEncodeUtil.addLogo(qrCodeBmp, logo);
+                    } else if (logoType == LogoType.CIRCLE) {
+                        logo = BmpUtil.getOvalBitmap(logo);
+                        qrCodeBmp = zbarEncodeUtil.addLogo(qrCodeBmp, logo);
+                    }
                 } else if (null != mask) {
                     qrCodeBmp = zbarEncodeUtil.mask(qrCodeBmp, mask);
                 } else if (null != bg) {

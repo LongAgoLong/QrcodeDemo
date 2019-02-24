@@ -5,10 +5,10 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
@@ -16,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.leo.libqrcode.decode.ZbarDecodeUtil;
+import com.leo.libqrcode.encode.LogoType;
 import com.leo.libqrcode.encode.ZbarEncodeUtil;
 import com.leo.qrcode.QrcodeScanActivity;
 
@@ -28,6 +29,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button mLogoQrcodeBtn;
     private Button mBgQrcodeBtn;
     private Button mMaskQrcodeBtn;
+    private Button mRoundLogoQrcodeBtn;
+    private Button mCircleQrcodeBtn;
     private TextView mResultTv;
     private ImageView mResultImg;
 
@@ -47,6 +50,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mBgQrcodeBtn.setOnClickListener(this);
         mMaskQrcodeBtn = findViewById(R.id.maskQrcodeBtn);
         mMaskQrcodeBtn.setOnClickListener(this);
+        mRoundLogoQrcodeBtn = findViewById(R.id.roundLogoQrcodeBtn);
+        mRoundLogoQrcodeBtn.setOnClickListener(this);
+        mCircleQrcodeBtn = findViewById(R.id.circleQrcodeBtn);
+        mCircleQrcodeBtn.setOnClickListener(this);
+
 
         mResultImg = findViewById(R.id.resultImg);
         mResultTv = findViewById(R.id.resultTv);
@@ -77,10 +85,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Bitmap logo = BitmapFactory.decodeResource(getResources(), R.mipmap.abc);
                 Bitmap logoBmp = ZbarEncodeUtil.Builder
                         .getInstance(qr, 300)
-                        .setLogo(logo)
+                        .setLogo(logo, LogoType.NORMAL)
                         .build();
                 if (null != logoBmp) {
                     mResultImg.setImageBitmap(logoBmp);
+                }
+                break;
+            case R.id.roundLogoQrcodeBtn:
+                Bitmap logo1 = BitmapFactory.decodeResource(getResources(), R.mipmap.abc);
+                Bitmap logo1Bmp = ZbarEncodeUtil.Builder
+                        .getInstance(qr, 300)
+                        .setLogo(logo1, LogoType.ROUND)
+                        .setRound(dip2px(50))
+                        .build();
+                if (null != logo1Bmp) {
+                    mResultImg.setImageBitmap(logo1Bmp);
+                }
+                break;
+            case R.id.circleQrcodeBtn:
+                Bitmap logo2 = BitmapFactory.decodeResource(getResources(), R.mipmap.abc);
+                Bitmap logo2Bmp = ZbarEncodeUtil.Builder
+                        .getInstance(qr, 300)
+                        .setLogo(logo2, LogoType.CIRCLE)
+                        .build();
+                if (null != logo2Bmp) {
+                    mResultImg.setImageBitmap(logo2Bmp);
                 }
                 break;
             case R.id.bgQrcodeBtn:
@@ -150,5 +179,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     break;
             }
         }
+    }
+
+    public int dip2px(float dpValue) {
+        final float scale = getResources().getDisplayMetrics().density;
+        return (int) (dpValue * scale + 0.5f);
     }
 }
