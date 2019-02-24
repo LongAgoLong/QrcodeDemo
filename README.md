@@ -21,7 +21,7 @@ allprojects {
 }
 ```
 ```java
-implementation 'com.github.LongAgoLong:QrcodeDemo:1.2'
+implementation 'com.github.LongAgoLong:QrcodeDemo:$JitPack-Version$'
 ```
 **maven依赖**
 ```java
@@ -36,7 +36,7 @@ implementation 'com.github.LongAgoLong:QrcodeDemo:1.2'
 <dependency>
 	<groupId>com.github.LongAgoLong</groupId>
 	<artifactId>QrcodeDemo</artifactId>
-	<version>1.2</version>
+	<version>$JitPack-Version$</version>
 </dependency>
 ```
 ### ②添加权限（Android6.0以上版本需自行动态请求）
@@ -97,5 +97,6 @@ public class QrcodeScanActivity extends CaptureActivity {
 | ZbarDecodeUtil.decode(byte[] yuv, int width, int height, int x, int y, int cwidth, int cheight) |识别图片YUV数据，截取部分     |
 | ZbarDecodeUtil.decode(byte[] yuv, int width, int height) | 识别图片YUV数据，不截取   |
 | ZbarDecodeUtil.decode(String path) |  识别手机相册里的图片  |
+| ZbarEncodeUtil.Builder |  通过建造者模式生成二维码  |
 | restartScan() |  再次扫描  |
 
