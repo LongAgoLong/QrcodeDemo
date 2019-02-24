@@ -10,7 +10,6 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
-import android.util.TypedValue;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
@@ -41,14 +40,16 @@ public class ZbarEncodeUtil {
     }
 
     /**
-     * @param str
-     * @param widthAndHeight
-     * @param level
+     * @param str              二维码文本
+     * @param size             二维码图像尺寸
+     * @param isDeleteWhiteGap 是否删除白边
+     * @param level            容错
      * @return
      * @throws WriterException
      * @throws NullPointerException
      */
-    public Bitmap createQRCode(String str, int widthAndHeight, ErrorCorrectionLevel level)
+    public Bitmap createQRCode(String str, int size, boolean isDeleteWhiteGap,
+                               ErrorCorrectionLevel level)
             throws WriterException, NullPointerException {
         Hashtable<EncodeHintType, Object> hints = new Hashtable<>();
         if (null != level) {
@@ -59,8 +60,10 @@ public class ZbarEncodeUtil {
             return null;
         }
         BitMatrix matrix = new MultiFormatWriter().encode(str, BarcodeFormat.QR_CODE,
-                widthAndHeight, widthAndHeight, hints);
-        matrix = deleteWhite(matrix);//删除白边
+                size, size, hints);
+        if (isDeleteWhiteGap) {
+            matrix = deleteWhite(matrix);//删除白边
+        }
         int width = matrix.getWidth();
         int height = matrix.getHeight();
         int[] pixels = new int[width * height];
@@ -163,7 +166,7 @@ public class ZbarEncodeUtil {
     }
 
     /*除白边*/
-    private static BitMatrix deleteWhite(BitMatrix matrix) {
+    private BitMatrix deleteWhite(BitMatrix matrix) {
         int[] rec = matrix.getEnclosingRectangle();
         int resWidth = rec[2] + 1;
         int resHeight = rec[3] + 1;
@@ -190,6 +193,8 @@ public class ZbarEncodeUtil {
         private int frontColor = 0xff000000;
         private int bgColor = 0xffffffff;
         private int size;
+        private boolean isDeleteWhiteGap;
+        private boolean canEditBgColor = true;
 
         private Builder(@NonNull String qrcode, int size) {
             this.qrcode = qrcode;
@@ -203,45 +208,87 @@ public class ZbarEncodeUtil {
             return new Builder(qrcode, size);
         }
 
+        /**
+         * @param isDeleteWhiteGap 是否删除四周白边边距
+         * @return
+         */
+        public Builder setIsDeleteWhiteGap(boolean isDeleteWhiteGap) {
+            this.isDeleteWhiteGap = isDeleteWhiteGap;
+            return this;
+        }
+
+        /**
+         * @param bg 设置背景图像
+         * @return
+         */
         public Builder setBg(Bitmap bg) {
             this.bg = bg;
             if (null != bg) {
                 setBgColor(Color.parseColor("#00ffffff"));
+                canEditBgColor = false;
             }
             return this;
         }
 
+        /**
+         * @param mask 设置mask图像
+         * @return
+         */
         public Builder setMask(Bitmap mask) {
             this.mask = mask;
             if (null != mask) {
                 setBgColor(Color.parseColor("#00ffffff"));
+                canEditBgColor = false;
             }
             return this;
         }
 
+        /**
+         * @param logo     设置logo图像
+         * @param logoType logo类型
+         * @return
+         */
         public Builder setLogo(Bitmap logo, @LogoType int logoType) {
             this.logo = logo;
             this.logoType = logoType;
             return this;
         }
 
+        /**
+         * @param roundPx 设置logo圆角值，单位px
+         * @return
+         */
         public Builder setRound(float roundPx) {
             this.roundPx = roundPx;
             return this;
         }
 
+        /**
+         * @param size 生成二维码图像尺寸
+         * @return
+         */
         public Builder setSize(int size) {
             this.size = size;
             return this;
         }
 
+        /**
+         * @param frontColor 设置前景色
+         * @return
+         */
         public Builder setFrontColor(int frontColor) {
             this.frontColor = frontColor;
             return this;
         }
 
+        /**
+         * @param bgColor 设置背景色
+         * @return
+         */
         public Builder setBgColor(int bgColor) {
-            this.bgColor = bgColor;
+            if (canEditBgColor) {
+                this.bgColor = bgColor;
+            }
             return this;
         }
 
@@ -250,7 +297,7 @@ public class ZbarEncodeUtil {
                 ZbarEncodeUtil zbarEncodeUtil = new ZbarEncodeUtil();
                 zbarEncodeUtil.setBgColor(bgColor);
                 zbarEncodeUtil.setFrontColor(frontColor);
-                Bitmap qrCodeBmp = zbarEncodeUtil.createQRCode(qrcode, size, ErrorCorrectionLevel.H);
+                Bitmap qrCodeBmp = zbarEncodeUtil.createQRCode(qrcode, size, isDeleteWhiteGap, ErrorCorrectionLevel.H);
                 if (null != logo) {
                     if (logoType == LogoType.NORMAL) {
                         qrCodeBmp = zbarEncodeUtil.addLogo(qrCodeBmp, logo);

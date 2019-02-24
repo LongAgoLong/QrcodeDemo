@@ -21,7 +21,7 @@ import com.leo.libqrcode.encode.ZbarEncodeUtil;
 import com.leo.qrcode.QrcodeScanActivity;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    private static final String qr = "君不见黄河之水天上来，奔流到海不复回";
+    private static final String qr = "君不见，黄河之水天上来，奔流到海不复回；君不见，高堂明镜悲白发，朝如青丝暮成雪";
 
     private Button mBtn0;
     private Button mBtn1;
@@ -76,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.qrcodeBtn:
                 Bitmap bmp = ZbarEncodeUtil.Builder
                         .getInstance(qr, 300)
+                        .setIsDeleteWhiteGap(true)
                         .build();
                 if (null != bmp) {
                     mResultImg.setImageBitmap(bmp);
@@ -85,6 +86,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Bitmap logo = BitmapFactory.decodeResource(getResources(), R.mipmap.abc);
                 Bitmap logoBmp = ZbarEncodeUtil.Builder
                         .getInstance(qr, 300)
+                        .setIsDeleteWhiteGap(true)// 是否删除二维码与边界的间距
                         .setLogo(logo, LogoType.NORMAL)
                         .build();
                 if (null != logoBmp) {
@@ -95,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Bitmap logo1 = BitmapFactory.decodeResource(getResources(), R.mipmap.abc);
                 Bitmap logo1Bmp = ZbarEncodeUtil.Builder
                         .getInstance(qr, 300)
+                        .setIsDeleteWhiteGap(true)
                         .setLogo(logo1, LogoType.ROUND)
                         .setRound(dip2px(50))
                         .build();
@@ -106,6 +109,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Bitmap logo2 = BitmapFactory.decodeResource(getResources(), R.mipmap.abc);
                 Bitmap logo2Bmp = ZbarEncodeUtil.Builder
                         .getInstance(qr, 300)
+                        .setIsDeleteWhiteGap(true)
                         .setLogo(logo2, LogoType.CIRCLE)
                         .build();
                 if (null != logo2Bmp) {
@@ -116,6 +120,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Bitmap bg = BitmapFactory.decodeResource(getResources(), R.mipmap.abc);
                 Bitmap bgBmp = ZbarEncodeUtil.Builder
                         .getInstance(qr, 300)
+                        .setIsDeleteWhiteGap(true)
                         .setBg(bg)
                         .build();
                 if (null != bgBmp) {
@@ -126,6 +131,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Bitmap mask = BitmapFactory.decodeResource(getResources(), R.mipmap.abc);
                 Bitmap maskBmp = ZbarEncodeUtil.Builder
                         .getInstance(qr, 300)
+                        .setIsDeleteWhiteGap(true)
                         .setMask(mask)
                         .build();
                 if (null != maskBmp) {
