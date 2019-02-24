@@ -191,7 +191,7 @@ public class ZbarEncodeUtil {
         private int bgColor = 0xffffffff;
         private int size;
 
-        public Builder(@NonNull String qrcode, int size) {
+        private Builder(@NonNull String qrcode, int size) {
             this.qrcode = qrcode;
             this.size = size;
         }
