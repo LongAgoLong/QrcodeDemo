@@ -12,16 +12,17 @@ import com.leo.libqrcode.bitmap.PlanarYUVLuminanceSource;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.lang.ref.WeakReference;
 
 /**
  * 描述: 接受消息后解码
  */
-final class DecodeHandler extends Handler {
+public final class DecodeHandler extends Handler {
 
-    CaptureActivity activity = null;
+    private WeakReference<CaptureActivity> weakReference;
 
-    DecodeHandler(CaptureActivity activity) {
-        this.activity = activity;
+    public DecodeHandler(CaptureActivity activity) {
+        weakReference = new WeakReference<>(activity);
     }
 
     @Override
@@ -29,7 +30,11 @@ final class DecodeHandler extends Handler {
         if (message.what == R.id.decode) {
             decode((byte[]) message.obj, message.arg1, message.arg2);
         } else if (message.what == R.id.quit) {
-            Looper.myLooper().quit();
+            try {
+                Looper.myLooper().quit();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -42,14 +47,20 @@ final class DecodeHandler extends Handler {
         int tmp = width;// Here we are swapping, that's the difference to #11
         width = height;
         height = tmp;
+        CaptureActivity activity = weakReference.get();
+        if (null == activity) {
+            return;
+        }
 
-        String result = ZbarDecodeUtil.decode(rotatedData, width, height, activity.getX(), activity.getY(), activity.getCropWidth(),
+        String result = ZbarDecodeUtil.decode(rotatedData, width, height,
+                activity.getX(), activity.getY(), activity.getCropWidth(),
                 activity.getCropHeight());
 
         if (result != null) {
             if (activity.isNeedCapture()) {
                 // 生成bitmap
-                PlanarYUVLuminanceSource source = new PlanarYUVLuminanceSource(rotatedData, width, height, activity.getX(), activity.getY(),
+                PlanarYUVLuminanceSource source = new PlanarYUVLuminanceSource(rotatedData,
+                        width, height, activity.getX(), activity.getY(),
                         activity.getCropWidth(), activity.getCropHeight(), false);
                 int[] pixels = source.renderThumbnail();
                 int w = source.getThumbnailWidth();
@@ -82,10 +93,8 @@ final class DecodeHandler extends Handler {
                 msg.what = R.id.decode_succeeded;
                 activity.getHandler().sendMessage(msg);
             }
-        } else {
-            if (null != activity.getHandler()) {
-                activity.getHandler().sendEmptyMessage(R.id.decode_failed);
-            }
+        } else if (null != activity.getHandler()) {
+            activity.getHandler().sendEmptyMessage(R.id.decode_failed);
         }
     }
 

@@ -269,5 +269,4 @@ final class CameraConfigurationManager {
             parameters.set("taking-picture-zoom", tenDesiredZoom);
         }
     }
-
 }

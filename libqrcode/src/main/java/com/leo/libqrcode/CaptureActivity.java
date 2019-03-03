@@ -1,14 +1,11 @@
 package com.leo.libqrcode;
 
 import android.app.Activity;
-import android.content.res.AssetFileDescriptor;
 import android.graphics.Point;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Vibrator;
 import android.view.SurfaceHolder;
 import android.view.SurfaceHolder.Callback;
 import android.view.SurfaceView;
@@ -23,6 +20,7 @@ import android.widget.RelativeLayout;
 import com.leo.libqrcode.camera.CameraManager;
 import com.leo.libqrcode.decode.CaptureActivityHandler;
 import com.leo.libqrcode.decode.InactivityTimer;
+import com.leo.libqrcode.util.NotifyUtil;
 
 import java.io.IOException;
 
@@ -34,9 +32,6 @@ public abstract class CaptureActivity extends Activity implements Callback {
     protected CaptureActivityHandler handler;
     protected boolean hasSurface;
     protected InactivityTimer inactivityTimer;
-    protected MediaPlayer mediaPlayer;
-    protected boolean playBeep;
-    protected static final float BEEP_VOLUME = 0.50f;
     protected boolean vibrate;
     protected int x = 0;
     protected int y = 0;
@@ -105,8 +100,10 @@ public abstract class CaptureActivity extends Activity implements Callback {
         hasSurface = false;
         inactivityTimer = new InactivityTimer(this);
 
-        TranslateAnimation mAnimation = new TranslateAnimation(TranslateAnimation.ABSOLUTE, 0f, TranslateAnimation.ABSOLUTE, 0f,
-                TranslateAnimation.RELATIVE_TO_PARENT, 0f, TranslateAnimation.RELATIVE_TO_PARENT, 0.9f);
+        TranslateAnimation mAnimation = new TranslateAnimation(TranslateAnimation.ABSOLUTE,
+                0f, TranslateAnimation.ABSOLUTE, 0f,
+                TranslateAnimation.RELATIVE_TO_PARENT, 0f,
+                TranslateAnimation.RELATIVE_TO_PARENT, 0.9f);
         mAnimation.setDuration(1500);
         mAnimation.setRepeatCount(-1);
         mAnimation.setRepeatMode(Animation.REVERSE);
@@ -119,23 +116,23 @@ public abstract class CaptureActivity extends Activity implements Callback {
     }
 
     protected void initUI() {
-        mContainer = (RelativeLayout) findViewById(R.id.capture_containter);
-        mCropLayout = (RelativeLayout) findViewById(R.id.capture_crop_layout);
+        mContainer = findViewById(R.id.capture_containter);
+        mCropLayout = findViewById(R.id.capture_crop_layout);
 
-        lightImg = (ImageView) findViewById(R.id.light_img);
+        lightImg = findViewById(R.id.light_img);
         lightImg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 light();
             }
         });
-        mQrLineView = (ImageView) findViewById(R.id.capture_scan_line);
+        mQrLineView = findViewById(R.id.capture_scan_line);
     }
 
     boolean flag = true;
 
     protected void light() {
-        if (flag == true) {
+        if (flag) {
             flag = false;
             // 开闪光灯
             CameraManager.get().openLight();
@@ -146,14 +143,13 @@ public abstract class CaptureActivity extends Activity implements Callback {
             CameraManager.get().offLight();
             lightImg.setSelected(false);
         }
-
     }
 
     @SuppressWarnings("deprecation")
     @Override
     protected void onResume() {
         super.onResume();
-        SurfaceView surfaceView = (SurfaceView) findViewById(R.id.capture_preview);
+        SurfaceView surfaceView = findViewById(R.id.capture_preview);
         SurfaceHolder surfaceHolder = surfaceView.getHolder();
         if (hasSurface) {
             initCamera(this, surfaceHolder);
@@ -161,12 +157,7 @@ public abstract class CaptureActivity extends Activity implements Callback {
             surfaceHolder.addCallback(this);
             surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         }
-        playBeep = true;
-        AudioManager audioService = (AudioManager) getSystemService(AUDIO_SERVICE);
-        if (audioService.getRingerMode() != AudioManager.RINGER_MODE_NORMAL) {
-            playBeep = false;
-        }
-        initBeepSound();
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
         vibrate = true;
     }
 
@@ -183,6 +174,7 @@ public abstract class CaptureActivity extends Activity implements Callback {
     @Override
     protected void onDestroy() {
         inactivityTimer.shutdown();
+        NotifyUtil.getInstance(this).destroy();
         super.onDestroy();
     }
 
@@ -193,7 +185,7 @@ public abstract class CaptureActivity extends Activity implements Callback {
      */
     public void handleDecode(String result) {
         inactivityTimer.onActivity();
-        playBeepSoundAndVibrate();
+        NotifyUtil.getInstance(this).playBeepSoundAndVibrate(this, vibrate);
         scanResult(result);
     }
 
@@ -227,9 +219,7 @@ public abstract class CaptureActivity extends Activity implements Callback {
             setCropWidth(cropWidth);
             setCropHeight(cropHeight);
             // 设置是否需要截图
-            setNeedCapture(true);
-
-
+            setNeedCapture(false);
         } catch (IOException ioe) {
             return;
         } catch (RuntimeException e) {
@@ -256,47 +246,9 @@ public abstract class CaptureActivity extends Activity implements Callback {
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         hasSurface = false;
-
     }
 
     public Handler getHandler() {
         return handler;
     }
-
-    private void initBeepSound() {
-        if (playBeep && mediaPlayer == null) {
-            setVolumeControlStream(AudioManager.STREAM_MUSIC);
-            mediaPlayer = new MediaPlayer();
-            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            mediaPlayer.setOnCompletionListener(beepListener);
-
-            AssetFileDescriptor file = getResources().openRawResourceFd(R.raw.beep);
-            try {
-                mediaPlayer.setDataSource(file.getFileDescriptor(), file.getStartOffset(), file.getLength());
-                file.close();
-                mediaPlayer.setVolume(BEEP_VOLUME, BEEP_VOLUME);
-                mediaPlayer.prepare();
-            } catch (IOException e) {
-                mediaPlayer = null;
-            }
-        }
-    }
-
-    private static final long VIBRATE_DURATION = 200L;
-
-    private void playBeepSoundAndVibrate() {
-        if (playBeep && mediaPlayer != null) {
-            mediaPlayer.start();
-        }
-        if (vibrate) {
-            Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-            vibrator.vibrate(VIBRATE_DURATION);
-        }
-    }
-
-    private final OnCompletionListener beepListener = new OnCompletionListener() {
-        public void onCompletion(MediaPlayer mediaPlayer) {
-            mediaPlayer.seekTo(0);
-        }
-    };
 }

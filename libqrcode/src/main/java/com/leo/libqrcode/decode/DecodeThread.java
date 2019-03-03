@@ -1,41 +1,45 @@
 package com.leo.libqrcode.decode;
 
-import java.util.concurrent.CountDownLatch;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.leo.libqrcode.CaptureActivity;
 
-import android.os.Handler;
-import android.os.Looper;
+import java.lang.ref.WeakReference;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * 描述: 解码线程
  */
-final class DecodeThread extends Thread {
+public final class DecodeThread extends Thread {
 
-	CaptureActivity activity;
-	private Handler handler;
-	private final CountDownLatch handlerInitLatch;
+    private WeakReference<CaptureActivity> weakReference;
+    private Handler handler;
+    private final CountDownLatch handlerInitLatch;
 
-	DecodeThread(CaptureActivity activity) {
-		this.activity = activity;
-		handlerInitLatch = new CountDownLatch(1);
-	}
+    public DecodeThread(CaptureActivity activity) {
+        weakReference = new WeakReference<>(activity);
+        handlerInitLatch = new CountDownLatch(1);
+    }
 
-	Handler getHandler() {
-		try {
-			handlerInitLatch.await();
-		} catch (InterruptedException ie) {
-			// continue?
-		}
-		return handler;
-	}
+    Handler getHandler() {
+        try {
+            handlerInitLatch.await();
+        } catch (InterruptedException ie) {
+            // continue?
+        }
+        return handler;
+    }
 
-	@Override
-	public void run() {
-		Looper.prepare();
-		handler = new DecodeHandler(activity);
-		handlerInitLatch.countDown();
-		Looper.loop();
-	}
+    @Override
+    public void run() {
+        Looper.prepare();
+        CaptureActivity activity = weakReference.get();
+        if (null != activity) {
+            handler = new DecodeHandler(activity);
+            handlerInitLatch.countDown();
+        }
+        Looper.loop();
+    }
 
 }
