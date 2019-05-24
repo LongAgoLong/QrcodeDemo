@@ -10,7 +10,7 @@ import android.os.Handler;
 
 public class AudioFocusManager {
     public static final String TAG = "AudioFocusManager";
-    public static int AUDIO_STREAM_TYPE = AudioManager.STREAM_MUSIC; // 远峰AC8227使用10，现代车机使用9，奇瑞用的是13
+    public static int AUDIO_STREAM_TYPE = AudioManager.STREAM_MUSIC;
 
     private static final Object mLock = new Object();
     private static AudioFocusManager mInstance;
