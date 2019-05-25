@@ -172,7 +172,7 @@ public abstract class CaptureActivity extends Activity implements Callback {
     @Override
     protected void onDestroy() {
         inactivityTimer.shutdown();
-        NotifyUtil.getInstance(this).destroy();
+        NotifyUtil.getInstance().destroy();
         super.onDestroy();
     }
 
@@ -183,7 +183,6 @@ public abstract class CaptureActivity extends Activity implements Callback {
      */
     public void handleDecode(String result) {
         inactivityTimer.onActivity();
-        NotifyUtil.getInstance(this).playBeepSoundAndVibrate(this, vibrate);
         scanResult(result);
     }
 

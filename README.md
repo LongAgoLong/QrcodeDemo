@@ -22,6 +22,7 @@ allprojects {
 }
 ```
 ```java
+implementation 'com.github.LongAgoLong.AndroidUtil:system:1.5.8'
 implementation 'com.github.LongAgoLong:QrcodeDemo:$JitPack-Version$'
 ```
 **maven依赖**
@@ -59,6 +60,10 @@ implementation 'com.github.LongAgoLong:QrcodeDemo:$JitPack-Version$'
 public class QrcodeScanActivity extends CaptureActivity {
     @Override
     public void scanResult(String result) { 
+        // 在此处播放提示音或者连续蜂鸣警告
+        NotifyUtil.getInstance().playBeepSoundAndVibrate(vibrate);
+        // NotifyUtil.getInstance().playBeepSoundAndVibrate(vibrate,3);
+        // 
         // 处理结果
         // 如果要继续扫描，处理完结果后调用restartScan()重启扫描识别
     }

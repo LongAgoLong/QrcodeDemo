@@ -3,6 +3,7 @@ package com.leo.qrcode;
 import android.content.Intent;
 
 import com.leo.libqrcode.CaptureActivity;
+import com.leo.libqrcode.util.NotifyUtil;
 
 public class QrcodeScanActivity extends CaptureActivity {
 
@@ -33,6 +34,8 @@ public class QrcodeScanActivity extends CaptureActivity {
 
     @Override
     public void scanResult(String result) {
+        NotifyUtil.getInstance().playBeepSoundAndVibrate(vibrate);
+//        NotifyUtil.getInstance().playBeepSoundAndVibrate(vibrate,3);
         Intent intent = new Intent();
         intent.putExtra("data", result);
         setResult(RESULT_OK, intent);
