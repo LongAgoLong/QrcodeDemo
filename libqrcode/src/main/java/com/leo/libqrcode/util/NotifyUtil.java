@@ -43,9 +43,12 @@ public final class NotifyUtil {
         notifyUtil = null;
     }
 
-    /*
+    /**
      * 警示响铃
-     * */
+     *
+     * @param context
+     * @param vibrate
+     */
     public void playBeepSoundAndVibrate(Context context, boolean vibrate) {
         playBeepSoundAndVibrate(context, vibrate, 1);
     }
@@ -77,6 +80,8 @@ public final class NotifyUtil {
                                 rePlayCount--;
                                 mediaPlayer.seekTo(0);
                                 mediaPlayer.start();
+                            } else {
+                                AudioFocusManager.getInstance().abandonAudioFocus();
                             }
                         } catch (Exception e) {
                             e.printStackTrace();

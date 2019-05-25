@@ -3,7 +3,6 @@ package com.leo.libqrcode;
 import android.app.Activity;
 import android.graphics.Point;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.SurfaceHolder;
@@ -145,7 +144,6 @@ public abstract class CaptureActivity extends Activity implements Callback {
         }
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     protected void onResume() {
         super.onResume();
