@@ -25,6 +25,7 @@ allprojects {
 implementation 'com.github.LongAgoLong.AndroidUtil:system:1.5.8'
 implementation 'com.github.LongAgoLong:QrcodeDemo:$JitPack-Version$'
 ```
+[AndroidUtil 任意门](https://github.com/LongAgoLong/AndroidUtil)
 **maven依赖**
 ```java
 <repositories>
