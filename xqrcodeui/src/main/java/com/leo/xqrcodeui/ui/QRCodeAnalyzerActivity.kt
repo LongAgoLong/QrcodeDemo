@@ -5,6 +5,9 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.animation.Animation
+import android.view.animation.LinearInterpolator
+import android.view.animation.TranslateAnimation
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
@@ -28,6 +31,7 @@ class QRCodeAnalyzerActivity : AppCompatActivity() {
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
     private var mCameraSelector: CameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+    private var mAnimation: TranslateAnimation? = null
 
     private val qrCodeAnalyzer: QRCodeAnalyzer = QRCodeAnalyzer(object : QRCodeDecodeListener {
         override fun onDecode(result: String?) {
@@ -57,11 +61,16 @@ class QRCodeAnalyzerActivity : AppCompatActivity() {
         super.onResume()
         mBinding.viewFinder.postDelayed({
             mBinding.viewFinder.systemUiVisibility = FLAGS_FULLSCREEN
+            mBinding.maskerView.setOverView(mBinding.captureCropLayout)
+            if (allPermissionsGranted()) {
+                startScanAnimation()
+            }
         }, IMMERSIVE_FLAG_TIMEOUT)
     }
 
     override fun onPause() {
         super.onPause()
+        stopScanAnimation()
     }
 
     override fun onRequestPermissionsResult(
@@ -72,12 +81,32 @@ class QRCodeAnalyzerActivity : AppCompatActivity() {
         if (requestCode == REQUEST_CODE_PERMISSIONS) {
             if (allPermissionsGranted()) {
                 startCamera(CameraSelector.DEFAULT_BACK_CAMERA)
+                startScanAnimation()
             } else {
                 Toast.makeText(this,
                         "Permissions not granted by the user.",
                         Toast.LENGTH_SHORT).show()
                 finish()
             }
+        }
+    }
+
+    private fun startScanAnimation() {
+        mAnimation = TranslateAnimation(TranslateAnimation.ABSOLUTE,
+                0f, TranslateAnimation.ABSOLUTE, 0f,
+                TranslateAnimation.RELATIVE_TO_PARENT, 0f,
+                TranslateAnimation.RELATIVE_TO_PARENT, 0.9f)
+        mAnimation!!.duration = 1500
+        mAnimation!!.repeatCount = -1
+        mAnimation!!.repeatMode = Animation.REVERSE
+        mAnimation!!.interpolator = LinearInterpolator()
+        mBinding.captureScanLine.startAnimation(mAnimation)
+    }
+
+    private fun stopScanAnimation() {
+        if (null != mAnimation) {
+            mAnimation!!.cancel()
+            mAnimation = null
         }
     }
 
