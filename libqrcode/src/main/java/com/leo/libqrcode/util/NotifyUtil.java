@@ -75,8 +75,6 @@ public final class NotifyUtil {
                         AudioFocusHelp.getInstance().abandonAudioFocus();
                     }
                 });
-                mediaPlayer.seekTo(0);
-                mediaPlayer.start();
             } else {
                 //多次
                 mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -95,9 +93,9 @@ public final class NotifyUtil {
                         }
                     }
                 });
-                mediaPlayer.seekTo(0);
-                mediaPlayer.start();
             }
+            mediaPlayer.seekTo(0);
+            mediaPlayer.start();
         } catch (Exception e) {
             e.printStackTrace();
         }

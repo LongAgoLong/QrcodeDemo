@@ -2,8 +2,9 @@ package com.leo.qrcode;
 
 import android.content.Intent;
 
-import com.leo.libqrcode.CaptureActivity;
 import com.leo.libqrcode.util.NotifyUtil;
+
+import com.leo.qrcodeui.ui.CaptureActivity;
 
 public class QrcodeScanActivity extends CaptureActivity {
 

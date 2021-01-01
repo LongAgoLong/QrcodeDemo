@@ -1,1 +1,2 @@
+include ':xqrcodeui'
 include ':app', ':libqrcode'

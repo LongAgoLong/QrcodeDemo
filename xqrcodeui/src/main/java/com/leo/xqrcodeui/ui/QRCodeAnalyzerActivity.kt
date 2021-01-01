@@ -1,0 +1,187 @@
+package com.leo.xqrcodeui.ui
+
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Bundle
+import android.util.Log
+import android.view.View
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.databinding.DataBindingUtil
+import com.leo.xqrcodeui.R
+import com.leo.xqrcodeui.analyzer.QRCodeAnalyzer
+import com.leo.xqrcodeui.analyzer.QRCodeDecodeListener
+import com.leo.xqrcodeui.databinding.ActivityQrcodeAnalyzerBinding
+import java.io.File
+import java.lang.ref.WeakReference
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+
+class QRCodeAnalyzerActivity : AppCompatActivity() {
+    private lateinit var mBinding: ActivityQrcodeAnalyzerBinding
+    private lateinit var outputDirectory: File
+    private lateinit var cameraExecutor: ExecutorService
+    private var mCameraSelector: CameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
+    private val qrCodeAnalyzer: QRCodeAnalyzer = QRCodeAnalyzer(object : QRCodeDecodeListener {
+        override fun onDecode(result: String?) {
+            Toast.makeText(this@QRCodeAnalyzerActivity,
+                    (if (result.isNullOrEmpty()) "result:isNullOrEmpty" else "result:$result"),
+                    Toast.LENGTH_LONG).show()
+        }
+    })
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        mBinding = DataBindingUtil.setContentView(this, R.layout.activity_qrcode_analyzer)
+        mBinding.onEventListener = OnEventListener(this)
+        outputDirectory = getOutputDirectory()
+        cameraExecutor = Executors.newSingleThreadExecutor()
+
+        // Request camera permissions
+        if (allPermissionsGranted()) {
+            startCamera(mCameraSelector)
+        } else {
+            ActivityCompat.requestPermissions(
+                    this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        mBinding.viewFinder.postDelayed({
+            mBinding.viewFinder.systemUiVisibility = FLAGS_FULLSCREEN
+        }, IMMERSIVE_FLAG_TIMEOUT)
+    }
+
+    override fun onPause() {
+        super.onPause()
+    }
+
+    override fun onRequestPermissionsResult(
+            requestCode: Int, permissions: Array<String>,
+            grantResults:
+            IntArray,
+    ) {
+        if (requestCode == REQUEST_CODE_PERMISSIONS) {
+            if (allPermissionsGranted()) {
+                startCamera(CameraSelector.DEFAULT_BACK_CAMERA)
+            } else {
+                Toast.makeText(this,
+                        "Permissions not granted by the user.",
+                        Toast.LENGTH_SHORT).show()
+                finish()
+            }
+        }
+    }
+
+    private fun startCamera(cameraSelector: CameraSelector) {
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+        cameraProviderFuture.addListener({
+            // Used to bind the lifecycle of cameras to the lifecycle owner
+            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+            // Preview
+            val preview = Preview.Builder()
+                    .build()
+                    .also {
+                        it.setSurfaceProvider(mBinding.viewFinder.createSurfaceProvider())
+                    }
+
+            val imageAnalyzer = ImageAnalysis.Builder()
+                    .build()
+                    .also {
+                        it.setAnalyzer(cameraExecutor, qrCodeAnalyzer)
+                    }
+            try {
+                // Unbind use cases before rebinding
+                cameraProvider.unbindAll()
+                // Bind use cases to camera
+                cameraProvider.bindToLifecycle(
+                        this, cameraSelector, preview, imageAnalyzer)
+
+            } catch (exc: Exception) {
+                Log.e(TAG, "Use case binding failed", exc)
+            }
+
+        }, ContextCompat.getMainExecutor(this))
+        mCameraSelector = cameraSelector
+    }
+
+    private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
+        ContextCompat.checkSelfPermission(
+                baseContext, it) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun getOutputDirectory(): File {
+        val mediaDir = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            externalMediaDirs.firstOrNull()?.let {
+                File(it, resources.getString(R.string.app_name)).apply { mkdirs() }
+            }
+        } else {
+            filesDir
+        }
+        return if (mediaDir != null && mediaDir.exists())
+            mediaDir else filesDir
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        cameraExecutor.shutdown()
+    }
+
+    /**
+     * 继续扫描
+     */
+    fun continueScan() {
+        qrCodeAnalyzer.isAbortDecode = false
+    }
+
+    /**
+     * 切换摄像头
+     */
+    fun switchCamera() {
+        val selector = if (mCameraSelector == CameraSelector.DEFAULT_FRONT_CAMERA) {
+            CameraSelector.DEFAULT_BACK_CAMERA
+        } else {
+            CameraSelector.DEFAULT_FRONT_CAMERA
+        }
+        startCamera(selector)
+    }
+
+    inner class OnEventListener(activity: QRCodeAnalyzerActivity) {
+        private var reference: WeakReference<QRCodeAnalyzerActivity> = WeakReference(activity)
+
+        fun onClick(view: View) {
+            val activity = reference.get() ?: return
+            when (view.id) {
+                R.id.continueScanBtn -> {
+                    activity.continueScan()
+                }
+                R.id.switchCameraBtn -> {
+                    activity.switchCamera()
+                }
+            }
+        }
+    }
+
+    companion object {
+        private const val TAG = "QRCodeAnalyzer"
+        private const val REQUEST_CODE_PERMISSIONS = 10
+        private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
+
+        const val IMMERSIVE_FLAG_TIMEOUT = 500L
+        const val FLAGS_FULLSCREEN =
+                View.SYSTEM_UI_FLAG_LOW_PROFILE or
+                        View.SYSTEM_UI_FLAG_FULLSCREEN or
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+    }
+}

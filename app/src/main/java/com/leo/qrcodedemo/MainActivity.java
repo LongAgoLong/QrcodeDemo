@@ -1,19 +1,26 @@
 package com.leo.qrcodedemo;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.leo.libqrcode.decode.ZbarDecodeUtil;
 import com.leo.libqrcode.encode.LogoType;
@@ -64,8 +71,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn0:
-                Intent intent = new Intent(this, QrcodeScanActivity.class);
-                startActivityForResult(intent, 0);
+                startScan();
                 break;
             case R.id.btn1:
                 Intent intent1 = new Intent(
@@ -138,6 +144,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     mResultImg.setImageBitmap(maskBmp);
                 }
                 break;
+        }
+    }
+
+    private void startScan() {
+        if (allPermissionsGranted()) {
+            Intent intent = new Intent(this, QrcodeScanActivity.class);
+            startActivityForResult(intent, 0);
+        } else {
+            ActivityCompat.requestPermissions(
+                    this, new String[]{Manifest.permission.CAMERA, Manifest.permission.VIBRATE},
+                    1001);
+        }
+    }
+
+    private boolean allPermissionsGranted() {
+        return ContextCompat.checkSelfPermission(
+                this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(
+                this, Manifest.permission.VIBRATE) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1001) {
+            if (allPermissionsGranted()) {
+                startScan();
+            } else {
+                Toast.makeText(this,
+                        "Permissions not granted by the user.",
+                        Toast.LENGTH_SHORT).show();
+            }
         }
     }
 

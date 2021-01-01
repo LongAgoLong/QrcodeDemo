@@ -5,7 +5,6 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.FLASHLIGHT" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <uses-feature android:name="android.hardware.camera" />
@@ -21,9 +20,9 @@
         android:theme="@style/AppTheme">
 
         <!-- 适配18:9屏幕手机 -->
-        <meta-data
-            android:name="android.max_aspect"
-            android:value="2.1" />
+<!--        <meta-data-->
+<!--            android:name="android.max_aspect"-->
+<!--            android:value="2.1" />-->
 
         <activity android:name=".MainActivity">
             <intent-filter>
@@ -34,6 +33,7 @@
         </activity>
         <activity
             android:name="com.leo.qrcode.QrcodeScanActivity"
+            android:theme="@style/ScanAppTheme"
             android:configChanges="screenSize|screenLayout|smallestScreenSize|orientation|keyboardHidden"
             android:screenOrientation="portrait" />
     </application>
