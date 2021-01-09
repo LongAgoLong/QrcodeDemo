@@ -44,7 +44,6 @@ class QRCodeAnalyzerActivity : AppCompatActivity() {
 
     private lateinit var mBinding: ActivityQrcodeAnalyzerBinding
     private lateinit var outputDirectory: File
-    private var mIsInitCamera = false
 
     private var mCameraSelector: CameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
     private var mAnimation: TranslateAnimation? = null
@@ -68,10 +67,10 @@ class QRCodeAnalyzerActivity : AppCompatActivity() {
         mBinding.viewFinder.postDelayed({
             mBinding.viewFinder.systemUiVisibility = FLAGS_FULLSCREEN
             mBinding.maskerView.setOverView(mBinding.captureCropLayout)
-            if (allPermissionsGranted(REQUIRED_PERMISSIONS) && !mIsInitCamera) {
+            if (allPermissionsGranted(REQUIRED_PERMISSIONS) && null == mCamera) {
                 startCamera(CameraSelector.DEFAULT_BACK_CAMERA)
-                startScanAnimation()
             }
+            startScanAnimation()
         }, IMMERSIVE_FLAG_TIMEOUT)
     }
 
@@ -117,7 +116,6 @@ class QRCodeAnalyzerActivity : AppCompatActivity() {
     }
 
     private fun startCamera(cameraSelector: CameraSelector) {
-        mIsInitCamera = true
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
         cameraProviderFuture.addListener({
             // Used to bind the lifecycle of cameras to the lifecycle owner
