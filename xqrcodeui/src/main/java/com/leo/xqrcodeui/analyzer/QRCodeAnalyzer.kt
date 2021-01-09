@@ -35,10 +35,8 @@ class QRCodeAnalyzer(private val listener: QRCodeDecodeListener) : ImageAnalysis
         if (!isAbortDecode) {
             val buffer = image.planes[0].buffer
             val data = ByteArray(buffer.remaining())
-            val height = image.height
-            val width = image.width
             buffer.get(data)
-            val decode = ZbarDecodeUtil.decode(data, width, height)
+            val decode = ZbarDecodeUtil.decode(data, image.width, image.height)
             decode?.run {
                 mUIHandler.post {
                     listener.onDecode(decode)

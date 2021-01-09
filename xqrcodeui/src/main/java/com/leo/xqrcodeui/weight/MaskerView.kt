@@ -6,7 +6,6 @@ import android.util.AttributeSet
 import android.view.View
 
 class MaskerView : View {
-    private var overView: View? = null
     private var overRect: Rect? = null
     private var mPaint: Paint? = null
 
@@ -32,7 +31,6 @@ class MaskerView : View {
     }
 
     fun setOverView(overView: View) {
-        this.overView = overView
         val viewLocation = IntArray(2)
         overView.getLocationOnScreen(viewLocation)
         overRect!!.left = viewLocation[0]
@@ -65,10 +63,8 @@ class MaskerView : View {
      * 画出透明区域
      */
     private fun drawOverRect(canvas: Canvas) {
-        if (null != overView) {
-            mPaint!!.color = Color.WHITE
-            mPaint!!.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OUT)
-            canvas.drawRect(overRect!!, mPaint!!)
-        }
+        mPaint!!.color = Color.WHITE
+        mPaint!!.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OUT)
+        canvas.drawRect(overRect!!, mPaint!!)
     }
 }
