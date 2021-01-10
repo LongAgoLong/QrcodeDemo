@@ -30,20 +30,29 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class QRCodeAnalyzerActivity : AppCompatActivity() {
+    companion object {
+        private const val TAG = "QRCodeAnalyzerActivity"
+        private const val REQUEST_CODE_PERMISSIONS = 10
+        private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
+
+        const val IMMERSIVE_FLAG_TIMEOUT = 500L
+    }
+
     private val cameraExecutor: ExecutorService by lazy {
         Executors.newSingleThreadExecutor()
     }
 
-    private val qrCodeAnalyzer: QRCodeAnalyzer = QRCodeAnalyzer(object : QRCodeDecodeListener {
-        override fun onDecode(result: String?) {
-            Toast.makeText(this@QRCodeAnalyzerActivity,
-                    (if (result.isNullOrEmpty()) "result:isNullOrEmpty" else "result:$result"),
-                    Toast.LENGTH_LONG).show()
-        }
-    })
+    private val qrCodeAnalyzer: QRCodeAnalyzer by lazy {
+        QRCodeAnalyzer(object : QRCodeDecodeListener {
+            override fun onDecode(result: String?) {
+                Toast.makeText(this@QRCodeAnalyzerActivity,
+                        (if (result.isNullOrEmpty()) "result:isNullOrEmpty" else "result:$result"),
+                        Toast.LENGTH_LONG).show()
+            }
+        })
+    }
 
     private lateinit var mBinding: ActivityQrcodeAnalyzerBinding
-    private lateinit var outputDirectory: File
 
     private var mCameraSelector: CameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
     private var mAnimation: TranslateAnimation? = null
@@ -53,7 +62,6 @@ class QRCodeAnalyzerActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_qrcode_analyzer)
         mBinding.onEventListener = OnEventListener(this)
-        outputDirectory = getOutputDirectory()
 
         // Request camera permissions
         if (!allPermissionsGranted(REQUIRED_PERMISSIONS)) {
@@ -67,10 +75,12 @@ class QRCodeAnalyzerActivity : AppCompatActivity() {
         mBinding.viewFinder.postDelayed({
             mBinding.viewFinder.systemUiVisibility = FLAGS_FULLSCREEN
             mBinding.maskerView.setOverView(mBinding.captureCropLayout)
-            if (allPermissionsGranted(REQUIRED_PERMISSIONS) && null == mCamera) {
-                startCamera(CameraSelector.DEFAULT_BACK_CAMERA)
+            if (allPermissionsGranted(REQUIRED_PERMISSIONS)) {
+                if (null == mCamera) {
+                    startCamera(CameraSelector.DEFAULT_BACK_CAMERA)
+                }
+                startScanAnimation()
             }
-            startScanAnimation()
         }, IMMERSIVE_FLAG_TIMEOUT)
     }
 
@@ -189,13 +199,5 @@ class QRCodeAnalyzerActivity : AppCompatActivity() {
                 }
             }
         }
-    }
-
-    companion object {
-        private const val TAG = "QRCodeAnalyzerActivity"
-        private const val REQUEST_CODE_PERMISSIONS = 10
-        private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
-
-        const val IMMERSIVE_FLAG_TIMEOUT = 500L
     }
 }
