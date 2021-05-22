@@ -9,13 +9,13 @@ import android.view.animation.Animation
 import android.view.animation.LinearInterpolator
 import android.view.animation.TranslateAnimation
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import com.leo.xqrcodeui.R
@@ -67,9 +67,21 @@ class QRCodeAnalyzerActivity : AppCompatActivity() {
 
         // Request camera permissions
         if (!allPermissionsGranted(REQUIRED_PERMISSIONS)) {
-            ActivityCompat.requestPermissions(
-                this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
-            )
+            val permissionRequest =
+                registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+                    if (it.values.all { value -> value }) {
+                        startCamera(CameraSelector.DEFAULT_BACK_CAMERA)
+                        startScanAnimation()
+                    } else {
+                        Toast.makeText(
+                            this,
+                            "Permissions not granted by the user.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        finish()
+                    }
+                }
+            permissionRequest.launch(REQUIRED_PERMISSIONS)
         }
     }
 
@@ -90,25 +102,6 @@ class QRCodeAnalyzerActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         stopScanAnimation()
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<String>,
-        grantResults: IntArray,
-    ) {
-        if (requestCode == REQUEST_CODE_PERMISSIONS) {
-            if (allPermissionsGranted(REQUIRED_PERMISSIONS)) {
-                startCamera(CameraSelector.DEFAULT_BACK_CAMERA)
-                startScanAnimation()
-            } else {
-                Toast.makeText(
-                    this,
-                    "Permissions not granted by the user.",
-                    Toast.LENGTH_SHORT
-                ).show()
-                finish()
-            }
-        }
     }
 
     private fun startScanAnimation() {
