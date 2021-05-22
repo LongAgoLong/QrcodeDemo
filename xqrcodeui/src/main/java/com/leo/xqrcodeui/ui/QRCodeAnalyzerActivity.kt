@@ -2,6 +2,7 @@ package com.leo.xqrcodeui.ui
 
 import android.Manifest
 import android.os.Bundle
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.View
 import android.view.animation.Animation
@@ -23,8 +24,7 @@ import com.leo.xqrcodeui.analyzer.QRCodeDecodeListener
 import com.leo.xqrcodeui.databinding.ActivityQrcodeAnalyzerBinding
 import com.leo.xqrcodeui.ext.FLAGS_FULLSCREEN
 import com.leo.xqrcodeui.ext.allPermissionsGranted
-import com.leo.xqrcodeui.ext.getOutputDirectory
-import java.io.File
+import com.leo.xqrcodeui.ext.aspectRatio
 import java.lang.ref.WeakReference
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -45,9 +45,11 @@ class QRCodeAnalyzerActivity : AppCompatActivity() {
     private val qrCodeAnalyzer: QRCodeAnalyzer by lazy {
         QRCodeAnalyzer(object : QRCodeDecodeListener {
             override fun onDecode(result: String?) {
-                Toast.makeText(this@QRCodeAnalyzerActivity,
-                        (if (result.isNullOrEmpty()) "result:isNullOrEmpty" else "result:$result"),
-                        Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    this@QRCodeAnalyzerActivity,
+                    (if (result.isNullOrEmpty()) "result:isNullOrEmpty" else "result:$result"),
+                    Toast.LENGTH_LONG
+                ).show()
             }
         })
     }
@@ -66,7 +68,8 @@ class QRCodeAnalyzerActivity : AppCompatActivity() {
         // Request camera permissions
         if (!allPermissionsGranted(REQUIRED_PERMISSIONS)) {
             ActivityCompat.requestPermissions(
-                    this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
+                this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
+            )
         }
     }
 
@@ -90,27 +93,31 @@ class QRCodeAnalyzerActivity : AppCompatActivity() {
     }
 
     override fun onRequestPermissionsResult(
-            requestCode: Int, permissions: Array<String>,
-            grantResults: IntArray,
+        requestCode: Int, permissions: Array<String>,
+        grantResults: IntArray,
     ) {
         if (requestCode == REQUEST_CODE_PERMISSIONS) {
             if (allPermissionsGranted(REQUIRED_PERMISSIONS)) {
                 startCamera(CameraSelector.DEFAULT_BACK_CAMERA)
                 startScanAnimation()
             } else {
-                Toast.makeText(this,
-                        "Permissions not granted by the user.",
-                        Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "Permissions not granted by the user.",
+                    Toast.LENGTH_SHORT
+                ).show()
                 finish()
             }
         }
     }
 
     private fun startScanAnimation() {
-        mAnimation = TranslateAnimation(TranslateAnimation.ABSOLUTE,
-                0f, TranslateAnimation.ABSOLUTE, 0f,
-                TranslateAnimation.RELATIVE_TO_PARENT, 0f,
-                TranslateAnimation.RELATIVE_TO_PARENT, 0.9f)
+        mAnimation = TranslateAnimation(
+            TranslateAnimation.ABSOLUTE,
+            0f, TranslateAnimation.ABSOLUTE, 0f,
+            TranslateAnimation.RELATIVE_TO_PARENT, 0f,
+            TranslateAnimation.RELATIVE_TO_PARENT, 0.9f
+        )
         mAnimation!!.duration = 1500
         mAnimation!!.repeatCount = -1
         mAnimation!!.repeatMode = Animation.REVERSE
@@ -126,28 +133,42 @@ class QRCodeAnalyzerActivity : AppCompatActivity() {
     }
 
     private fun startCamera(cameraSelector: CameraSelector) {
+        val metrics = DisplayMetrics().also { mBinding.viewFinder.display.getRealMetrics(it) }
+        val screenAspectRatio = aspectRatio(metrics.widthPixels, metrics.heightPixels)
+        val rotation = mBinding.viewFinder.display.rotation
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
         cameraProviderFuture.addListener({
             // Used to bind the lifecycle of cameras to the lifecycle owner
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
             // Preview
             val preview = Preview.Builder()
-                    .build()
-                    .also {
-                        it.setSurfaceProvider(mBinding.viewFinder.createSurfaceProvider())
-                    }
+//                .setTargetResolution(size)
+                // We request aspect ratio but no resolution
+                .setTargetAspectRatio(screenAspectRatio)
+                // Set initial target rotation
+                .setTargetRotation(rotation)
+                .build()
+                .also {
+                    it.setSurfaceProvider(mBinding.viewFinder.surfaceProvider)
+                }
 
             val imageAnalyzer = ImageAnalysis.Builder()
-                    .build()
-                    .also {
-                        it.setAnalyzer(cameraExecutor, qrCodeAnalyzer)
-                    }
+                .build()
+                .also {
+                    it.setAnalyzer(cameraExecutor, qrCodeAnalyzer)
+                }
             try {
                 // Unbind use cases before rebinding
                 cameraProvider.unbindAll()
                 // Bind use cases to camera
                 mCamera = cameraProvider.bindToLifecycle(
-                        this, cameraSelector, preview, imageAnalyzer)
+                    this, cameraSelector, preview, imageAnalyzer
+                )
+                mBinding.lightImg.visibility = if (mCamera?.cameraInfo!!.hasFlashUnit()) {
+                    View.VISIBLE
+                } else {
+                    View.INVISIBLE
+                }
             } catch (exc: Exception) {
                 Log.e(TAG, "Use case binding failed", exc)
             }

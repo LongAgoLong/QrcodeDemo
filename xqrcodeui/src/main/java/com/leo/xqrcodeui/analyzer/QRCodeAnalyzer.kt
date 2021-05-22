@@ -12,18 +12,22 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
 class QRCodeAnalyzer(private val listener: QRCodeDecodeListener) : ImageAnalysis.Analyzer {
     private val mUIHandler: Handler = Handler(Looper.getMainLooper())
     private val rwl: ReentrantReadWriteLock = ReentrantReadWriteLock()
+
+    private val readLock: ReentrantReadWriteLock.ReadLock = rwl.readLock()
+    private val writeLock: ReentrantReadWriteLock.WriteLock = rwl.writeLock()
+
     var isAbortDecode: Boolean = false
         set(value) {
-            rwl.writeLock().lock()
+            writeLock.lock()
             field = value
-            rwl.writeLock().unlock()
+            writeLock.unlock()
         }
         get() {
             try {
-                rwl.readLock().lock()
+                readLock.lock()
                 return field
             } finally {
-                rwl.readLock().unlock()
+                readLock.unlock()
             }
         }
 
