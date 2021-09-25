@@ -34,8 +34,6 @@ class QRCodeAnalyzerActivity : AppCompatActivity() {
         private const val TAG = "QRCodeAnalyzerActivity"
         private const val REQUEST_CODE_PERMISSIONS = 10
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
-
-        const val IMMERSIVE_FLAG_TIMEOUT = 500L
     }
 
     private val cameraExecutor: ExecutorService by lazy {
@@ -46,9 +44,9 @@ class QRCodeAnalyzerActivity : AppCompatActivity() {
         QRCodeAnalyzer(object : QRCodeDecodeListener {
             override fun onDecode(result: String?) {
                 Toast.makeText(
-                    this@QRCodeAnalyzerActivity,
-                    (if (result.isNullOrEmpty()) "result:isNullOrEmpty" else "result:$result"),
-                    Toast.LENGTH_LONG
+                        this@QRCodeAnalyzerActivity,
+                        (if (result.isNullOrEmpty()) "result:isNullOrEmpty" else "result:$result"),
+                        Toast.LENGTH_LONG
                 ).show()
             }
         })
@@ -68,26 +66,26 @@ class QRCodeAnalyzerActivity : AppCompatActivity() {
         // Request camera permissions
         if (!allPermissionsGranted(REQUIRED_PERMISSIONS)) {
             val permissionRequest =
-                registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-                    if (it.values.all { value -> value }) {
-                        startCamera(CameraSelector.DEFAULT_BACK_CAMERA)
-                        startScanAnimation()
-                    } else {
-                        Toast.makeText(
-                            this,
-                            "Permissions not granted by the user.",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        finish()
+                    registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+                        if (it.values.all { value -> value }) {
+                            startCamera(CameraSelector.DEFAULT_BACK_CAMERA)
+                            startScanAnimation()
+                        } else {
+                            Toast.makeText(
+                                    this,
+                                    "Permissions not granted by the user.",
+                                    Toast.LENGTH_SHORT
+                            ).show()
+                            finish()
+                        }
                     }
-                }
             permissionRequest.launch(REQUIRED_PERMISSIONS)
         }
     }
 
     override fun onResume() {
         super.onResume()
-        mBinding.viewFinder.postDelayed({
+        mBinding.viewFinder.post {
             mBinding.viewFinder.systemUiVisibility = FLAGS_FULLSCREEN
             mBinding.maskerView.setOverView(mBinding.captureCropLayout)
             if (allPermissionsGranted(REQUIRED_PERMISSIONS)) {
@@ -96,7 +94,8 @@ class QRCodeAnalyzerActivity : AppCompatActivity() {
                 }
                 startScanAnimation()
             }
-        }, IMMERSIVE_FLAG_TIMEOUT)
+        }
+
     }
 
     override fun onPause() {
@@ -106,15 +105,16 @@ class QRCodeAnalyzerActivity : AppCompatActivity() {
 
     private fun startScanAnimation() {
         mAnimation = TranslateAnimation(
-            TranslateAnimation.ABSOLUTE,
-            0f, TranslateAnimation.ABSOLUTE, 0f,
-            TranslateAnimation.RELATIVE_TO_PARENT, 0f,
-            TranslateAnimation.RELATIVE_TO_PARENT, 0.9f
-        )
-        mAnimation!!.duration = 1500
-        mAnimation!!.repeatCount = -1
-        mAnimation!!.repeatMode = Animation.REVERSE
-        mAnimation!!.interpolator = LinearInterpolator()
+                TranslateAnimation.ABSOLUTE,
+                0f, TranslateAnimation.ABSOLUTE, 0f,
+                TranslateAnimation.RELATIVE_TO_PARENT, 0f,
+                TranslateAnimation.RELATIVE_TO_PARENT, 0.9f
+        ).also {
+            it.duration = 1500
+            it.repeatCount = -1
+            it.repeatMode = Animation.REVERSE
+            it.interpolator = LinearInterpolator()
+        }
         mBinding.captureScanLine.startAnimation(mAnimation)
     }
 
@@ -136,26 +136,26 @@ class QRCodeAnalyzerActivity : AppCompatActivity() {
             // Preview
             val preview = Preview.Builder()
 //                .setTargetResolution(size)
-                // We request aspect ratio but no resolution
-                .setTargetAspectRatio(screenAspectRatio)
-                // Set initial target rotation
-                .setTargetRotation(rotation)
-                .build()
-                .also {
-                    it.setSurfaceProvider(mBinding.viewFinder.surfaceProvider)
-                }
+                    // We request aspect ratio but no resolution
+                    .setTargetAspectRatio(screenAspectRatio)
+                    // Set initial target rotation
+                    .setTargetRotation(rotation)
+                    .build()
+                    .also {
+                        it.setSurfaceProvider(mBinding.viewFinder.surfaceProvider)
+                    }
 
             val imageAnalyzer = ImageAnalysis.Builder()
-                .build()
-                .also {
-                    it.setAnalyzer(cameraExecutor, qrCodeAnalyzer)
-                }
+                    .build()
+                    .also {
+                        it.setAnalyzer(cameraExecutor, qrCodeAnalyzer)
+                    }
             try {
                 // Unbind use cases before rebinding
                 cameraProvider.unbindAll()
                 // Bind use cases to camera
                 mCamera = cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview, imageAnalyzer
+                        this, cameraSelector, preview, imageAnalyzer
                 )
                 mBinding.lightImg.visibility = if (mCamera?.cameraInfo!!.hasFlashUnit()) {
                     View.VISIBLE
@@ -178,14 +178,14 @@ class QRCodeAnalyzerActivity : AppCompatActivity() {
     /**
      * 继续扫描
      */
-    fun continueScan() {
+    private fun continueScan() {
         qrCodeAnalyzer.isAbortDecode = false
     }
 
     /**
      * 切换摄像头
      */
-    fun switchCamera() {
+    private fun switchCamera() {
         val selector = if (mCameraSelector == CameraSelector.DEFAULT_FRONT_CAMERA) {
             CameraSelector.DEFAULT_BACK_CAMERA
         } else {

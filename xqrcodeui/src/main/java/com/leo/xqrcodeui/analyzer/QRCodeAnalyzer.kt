@@ -12,6 +12,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
 class QRCodeAnalyzer(private val listener: QRCodeDecodeListener) : ImageAnalysis.Analyzer {
     private val mUIHandler: Handler = Handler(Looper.getMainLooper())
     private val rwl: ReentrantReadWriteLock = ReentrantReadWriteLock()
+    private val mLock: Any = Any()
 
     private val readLock: ReentrantReadWriteLock.ReadLock = rwl.readLock()
     private val writeLock: ReentrantReadWriteLock.WriteLock = rwl.writeLock()
@@ -36,20 +37,20 @@ class QRCodeAnalyzer(private val listener: QRCodeDecodeListener) : ImageAnalysis
             Log.e("BarcodeAnalyzer", "expect YUV_420_888, now = ${image.format}")
             return
         }
-        if (!isAbortDecode) {
-            val buffer = image.planes[0].buffer
-            val data = ByteArray(buffer.remaining())
-            buffer.get(data)
-            val decode = ZbarDecodeUtil.decode(data, image.width, image.height)
-            decode?.run {
-                mUIHandler.post {
-                    listener.onDecode(decode)
+        synchronized(mLock, block = {
+            if (!isAbortDecode) {
+                val buffer = image.planes[0].buffer
+                val data = ByteArray(buffer.remaining())
+                buffer.get(data)
+                val decode = ZbarDecodeUtil.decode(data, image.width, image.height)
+                decode?.run {
+                    mUIHandler.post {
+                        listener.onDecode(decode)
+                    }
+                    isAbortDecode = true
                 }
-                isAbortDecode = true
             }
-        }
+        })
         image.close()
     }
-
-
 }

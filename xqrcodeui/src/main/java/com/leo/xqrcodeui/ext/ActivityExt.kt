@@ -38,8 +38,7 @@ fun Activity.getOutputDirectory(): File {
     } else {
         filesDir
     }
-    return if (mediaDir != null && mediaDir.exists())
-        mediaDir else filesDir
+    return if (mediaDir != null && mediaDir.exists()) mediaDir else filesDir
 }
 
 /**
